@@ -43,6 +43,8 @@ async function handler(req: NextRequest) {
     LIMIT ${limit} OFFSET ${offset}    
   `)
 
+  console.log(products.rows)
+
   return NextResponse.json(products.rows)
 
 }
