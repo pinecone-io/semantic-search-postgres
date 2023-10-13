@@ -21,16 +21,24 @@ required_env_vars=(
 "CERTIFICATE_BASE64"
 )
 
+# Initialize an array to hold missing variables
+missing_vars=()
+
 # Loop through the array and check each variable
 for env_var in "${required_env_vars[@]}"; do
   # Use indirect variable reference to get the value of the env var
   value="${!env_var}"
 
   if [[ -z "$value" ]]; then
-    echo "Error: Environment variable $env_var must be exported and cannot be an empty string."
-    exit 1
+    missing_vars+=("$env_var")
   fi
 done
+
+# Check if there are any missing variables and report them all at once
+if [ ${#missing_vars[@]} -ne 0 ]; then
+  echo "Error: The following environment variables must be exported and cannot be an empty string: ${missing_vars[*]}"
+  exit 1
+fi
 
 echo "All required environment variables are set. Proceeding to Docker build..."
 
