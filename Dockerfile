@@ -30,15 +30,34 @@ RUN yarn build
 FROM node:lts-alpine AS runner
 
 # Accept the --build-arg values from the command line for setting the Pinecone 
-# API key and environment variables. Yes, we need to do this in both stages, 
-# because the prior build step will fail if the Pinecone client can't find 
-# the env vars it needs
+# API key and environment variables. 
+
+#Yes, we need to do this for the PINECONE_API_KEY and PINECONE_ENVIRONMENT environment 
+# variables in both stages, because the prior build step will fail if the Pinecone client 
+# can't find the env vars it needs during instantiation
 ARG PINECONE_API_KEY
 ARG PINECONE_ENVIRONMENT
+ARG PINECONE_INDEX
+ARG OPENAI_API_KEY
+ARG POSTGRES_DB_NAME
+ARG POSTGRES_DB_HOST
+ARG POSTGRES_DB_PORT
+ARG POSTGRES_DB_USER
+ARG POSTGRES_DB_PASSWORD
+ARG CERTIFICATE_BASE64
 
-# Re-set the ENV variables for the runtime stage
+# Re-set the PINECONE auth ENV variables for the runtime stage
 ENV PINECONE_API_KEY=$PINECONE_API_KEY
 ENV PINECONE_ENVIRONMENT=$PINECONE_ENVIRONMENT
+# Set the remaining environment variables required by the Next.js app at runtime
+ENV PINECONE_INDEX=$PINECONE_INDEX
+ENV OPENAI_API_KEY=$OPENAI_API_KEY
+ENV POSTGRES_DB_NAME=$POSTGRES_DB_NAME
+ENV POSTGRES_DB_HOST=$POSTGRES_DB_HOST
+ENV POSTGRES_DB_PORT=$POSTGRES_DB_PORT
+ENV POSTGRES_DB_USER=$POSTGRES_DB_USER
+ENV POSTGRES_DB_PASSWORD=$POSTGRES_DB_PASSWORD
+ENV CERTIFICATE_BASE64=$CERTIFICATE_BASE64
 
 ARG X_TAG
 WORKDIR /opt/app
