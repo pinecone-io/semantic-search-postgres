@@ -22,8 +22,22 @@ async function handler(req: NextRequest) {
 
   const pgClient = await db.getClient()
 
-  const index = await pinecone.index<Metadata>(process.env.PINECONE_INDEX!)
+  const indexName = process.env.PINECONE_INDEX!
 
+  await pinecone.createIndex({
+    name: indexName,
+    dimension: 1536,
+
+    // This option tells the client not to throw if the index already exists.
+    // It serves as replacement for createIndexIfNotExists
+    suppressConflicts: true,
+
+    // This option tells the client not to resolve the promise until the
+    // index is ready. It replaces waitUntilIndexIsReady.
+    waitUntilReady: true,
+  });
+
+  const index = pinecone.index<Metadata>(indexName)
 
   const embeddedSearchTerm = await getEmbeddings(searchTerm)
 
