@@ -37,11 +37,15 @@ async function handler(req: NextRequest) {
 
   const ids = result.matches?.map((match) => match.metadata?.id)
 
-  const products = await pgClient.query(`
+  const query = `
     SELECT * FROM products 
-    WHERE id IN (${ids?.map((id) => `'${id}'`).join(',')})
+    ${ids.length > 0 ? `WHERE id IN (${ids?.map((id) => `'${id}'`).join(',')})` : ''}
     LIMIT ${limit} OFFSET ${offset}    
-  `)
+  `
+
+  console.log(`query: ${query}`)
+
+  const products = await pgClient.query(query)
 
   console.log(products.rows)
 
