@@ -25,6 +25,16 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+## TODO: Bootstrapping your Pinecone.io index
+
+This application uses a Pinecone index and a Postgres database in concert. 
+
+The sample data for this app exists in `/data/products.csv`.
+
+The Pinecone index stores embeddings of products, allowing for semantic search over products. 
+
+Postgres is used as a form of temporary storage and in order to emit changes whenever a user modifies product records. 
+
 ## Docker build 
 
 You can run the helper `./docker-build.sh` script in the project root. This script will: 
