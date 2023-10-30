@@ -52,7 +52,7 @@ async function handler(req: NextRequest) {
   const ids = result.matches?.map((match) => match.metadata?.id)
 
   const query = `
-    SELECT * FROM products 
+    SELECT * FROM products_with_increment
     ${ids.length > 0 ? `WHERE id IN (${ids?.map((id) => `'${id}'`).join(',')})` : ''}
     LIMIT ${limit} OFFSET ${offset}    
   `
