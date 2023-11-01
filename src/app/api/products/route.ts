@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Pinecone } from '@pinecone-database/pinecone'
 import { getEmbeddings } from '@/utils/embeddings';
 import db from '@/utils/db';
+// @ts-ignore
+import PipelineSingleton from '@/utils/embedder';
+
 
 
 type Metadata = {
@@ -38,18 +41,24 @@ async function handler(req: NextRequest) {
   });
 
   const index = pinecone.index<Metadata>(indexName)
+  let result
 
-  const embeddedSearchTerm = await getEmbeddings(searchTerm)
+  if (searchTerm) {
+    // const embeddedSearchTerm = await getEmbeddings(searchTerm)
+    //@ts-ignore
+    const embedder = await PipelineSingleton.getInstance()
+    const embeddingResult = await embedder(searchTerm, { pooling: 'mean', quantize: true })
+    const embeddedSearchTerm = Array.from(embeddingResult[0].data) as number[]
+    console.log(Array.from(embeddingResult[0].data).length)
 
-  const result = await index.query({
-    vector: embeddedSearchTerm,
-    topK: 100,
-    includeMetadata: true
-  })
+    result = await index.query({
+      vector: embeddedSearchTerm,
+      topK: 100,
+      includeMetadata: true
+    })
+  }
 
-  console.log(result)
-
-  const ids = result.matches?.map((match) => match.metadata?.id)
+  const ids = result ? result.matches?.map((match) => match.metadata?.id) : []
 
   const query = `
     SELECT * FROM products_with_increment
@@ -57,11 +66,11 @@ async function handler(req: NextRequest) {
     LIMIT ${limit} OFFSET ${offset}    
   `
 
-  console.log(`query: ${query}`)
+  // console.log(`query: ${query}`)
 
   const products = await pgClient.query(query)
 
-  console.log(products.rows)
+  // console.log(products.rows)
 
   return NextResponse.json(products.rows)
 
