@@ -1,10 +1,11 @@
+// page/api/products.ts
 
-// pages/api/products.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { Pinecone } from '@pinecone-database/pinecone'
-import { getEmbeddings } from '@/utils/embeddings';
+import { Embedder } from '@/utils/embeddings';
 import db from '@/utils/db';
 
+const embedder = new Embedder();
 
 type Metadata = {
   id: string
@@ -14,8 +15,9 @@ type Metadata = {
 const pinecone = new Pinecone()
 const limit = 10
 
-
 async function handler(req: NextRequest) {
+
+
   const { searchTerm, currentPage } = await req.json();
   console.log(searchTerm, currentPage)
   const offset = currentPage > 1 ? (currentPage - 1) * limit : currentPage
@@ -39,7 +41,7 @@ async function handler(req: NextRequest) {
 
   const index = pinecone.index<Metadata>(indexName)
 
-  const embeddedSearchTerm = await getEmbeddings(searchTerm)
+  const embeddedSearchTerm = await embedder.embed({ text: searchTerm })
 
   const result = await index.query({
     vector: embeddedSearchTerm,
@@ -64,9 +66,7 @@ async function handler(req: NextRequest) {
   console.log(products.rows)
 
   return NextResponse.json(products.rows)
-
 }
-
 
 export {
   handler as POST
