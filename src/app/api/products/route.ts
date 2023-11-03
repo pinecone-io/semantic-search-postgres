@@ -13,9 +13,12 @@ type Metadata = {
 const pinecone = new Pinecone()
 const limit = 10
 
+let embedderInitialized = false
+
 async function handler(req: NextRequest) {
-
-
+  if (!embedderInitialized) {
+    embedder.init()
+  }
   const { searchTerm, currentPage } = await req.json();
   console.log(searchTerm, currentPage)
   const offset = currentPage > 1 ? (currentPage - 1) * limit : currentPage
