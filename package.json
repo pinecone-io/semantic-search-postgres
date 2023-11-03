@@ -12,8 +12,10 @@
     "@pinecone-database/pinecone": "^1.1.0",
     "@xenova/transformers": "^2.7.0",
     "next": "13.5.4",
+    "onnxruntime-node": "^1.16.1",
     "openai-edge": "^1.2.2",
     "pg": "^8.11.3",
+    "pg-copy-streams": "^6.0.6",
     "react": "^18",
     "react-dom": "^18",
     "ts-postgres": "latest"
