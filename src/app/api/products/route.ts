@@ -1,13 +1,9 @@
-
-// pages/api/products.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { Pinecone } from '@pinecone-database/pinecone'
-import { getEmbeddings } from '@/utils/embeddings';
+import { Embedder } from '@/utils/embeddings';
 import db from '@/utils/db';
-// @ts-ignore
-import PipelineSingleton from '@/utils/embedder';
 
-
+const embedder = new Embedder();
 
 type Metadata = {
   id: string
@@ -17,8 +13,9 @@ type Metadata = {
 const pinecone = new Pinecone()
 const limit = 10
 
-
 async function handler(req: NextRequest) {
+
+
   const { searchTerm, currentPage } = await req.json();
   console.log(searchTerm, currentPage)
   const offset = currentPage > 1 ? (currentPage - 1) * limit : currentPage
@@ -29,7 +26,7 @@ async function handler(req: NextRequest) {
 
   await pinecone.createIndex({
     name: indexName,
-    dimension: 1536,
+    dimension: 384,
 
     // This option tells the client not to throw if the index already exists.
     // It serves as replacement for createIndexIfNotExists
@@ -41,22 +38,16 @@ async function handler(req: NextRequest) {
   });
 
   const index = pinecone.index<Metadata>(indexName)
-  let result
 
-  if (searchTerm) {
-    // const embeddedSearchTerm = await getEmbeddings(searchTerm)
-    //@ts-ignore
-    const embedder = await PipelineSingleton.getInstance()
-    const embeddingResult = await embedder(searchTerm, { pooling: 'mean', quantize: true })
-    const embeddedSearchTerm = Array.from(embeddingResult[0].data) as number[]
-    console.log(Array.from(embeddingResult[0].data).length)
+  const embeddedSearchTerm = await embedder.embed({ text: searchTerm })
 
-    result = await index.query({
-      vector: embeddedSearchTerm,
-      topK: 100,
-      includeMetadata: true
-    })
-  }
+  const result = await index.query({
+    vector: embeddedSearchTerm,
+    topK: 100,
+    includeMetadata: true
+  })
+
+  console.log(`result: %o`, result)
 
   const ids = result ? result.matches?.map((match) => match.metadata?.id) : []
 
@@ -66,16 +57,14 @@ async function handler(req: NextRequest) {
     LIMIT ${limit} OFFSET ${offset}    
   `
 
-  // console.log(`query: ${query}`)
+  console.log(`query: ${query}`)
 
   const products = await pgClient.query(query)
 
-  // console.log(products.rows)
+  console.log(products.rows)
 
   return NextResponse.json(products.rows)
-
 }
-
 
 export {
   handler as POST
