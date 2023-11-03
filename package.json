@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^1.1.0",
+    "@xenova/transformers": "^2.7.0",
     "next": "13.5.4",
     "openai-edge": "^1.2.2",
     "pg": "^8.11.3",
